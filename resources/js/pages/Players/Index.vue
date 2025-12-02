@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp } from 'lucide-vue-next';
 
 interface Player {
     id: number;
@@ -49,11 +49,6 @@ function sortBy(field: string) {
     );
 }
 
-function getSortIcon(field: string) {
-    if (props.sort !== field) return ArrowUpDown;
-    return props.direction === 'desc' ? ChevronDown : ChevronUp;
-}
-
 function formatDecimal(value: number | string | null): string {
     if (value === null || value === undefined) return '---';
     const num = typeof value === 'string' ? parseFloat(value) : value;
@@ -80,104 +75,48 @@ function formatDecimal(value: number | string | null): string {
                 <CardHeader>
                     <CardTitle>Player Statistics</CardTitle>
                     <CardDescription>
-                        Click column headers to sort. Click a player name to
-                        view details.
+                        Click a player name to view details. Sort by Hits or Home Runs.
                     </CardDescription>
+                    
+                    <!-- Sort Controls -->
+                    <div class="flex items-center gap-2 pt-4">
+                        <span class="text-sm text-muted-foreground">Sort by:</span>
+                        <Button
+                            :variant="sort === 'hits' ? 'default' : 'outline'"
+                            size="sm"
+                            @click="sortBy('hits')"
+                        >
+                            Hits
+                            <ArrowDown v-if="sort === 'hits' && direction === 'desc'" class="ml-1 h-4 w-4" />
+                            <ArrowUp v-if="sort === 'hits' && direction === 'asc'" class="ml-1 h-4 w-4" />
+                        </Button>
+                        <Button
+                            :variant="sort === 'home_runs' ? 'default' : 'outline'"
+                            size="sm"
+                            @click="sortBy('home_runs')"
+                        >
+                            Home Runs
+                            <ArrowDown v-if="sort === 'home_runs' && direction === 'desc'" class="ml-1 h-4 w-4" />
+                            <ArrowUp v-if="sort === 'home_runs' && direction === 'asc'" class="ml-1 h-4 w-4" />
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b text-left">
-                                    <th class="p-3 font-medium">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            @click="sortBy('name')"
-                                            class="-ml-3"
-                                        >
-                                            Name
-                                            <component
-                                                :is="getSortIcon('name')"
-                                                class="ml-1 h-4 w-4"
-                                            />
-                                        </Button>
-                                    </th>
+                                    <th class="p-3 font-medium">Name</th>
                                     <th class="p-3 font-medium">Pos</th>
-                                    <th class="p-3 font-medium">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            @click="sortBy('games')"
-                                            class="-ml-3"
-                                        >
-                                            G
-                                            <component
-                                                :is="getSortIcon('games')"
-                                                class="ml-1 h-4 w-4"
-                                            />
-                                        </Button>
+                                    <th class="p-3 font-medium">G</th>
+                                    <th class="p-3 font-medium" :class="{ 'text-primary': sort === 'hits' }">
+                                        H
                                     </th>
-                                    <th class="p-3 font-medium">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            @click="sortBy('hits')"
-                                            class="-ml-3"
-                                        >
-                                            H
-                                            <component
-                                                :is="getSortIcon('hits')"
-                                                class="ml-1 h-4 w-4"
-                                            />
-                                        </Button>
+                                    <th class="p-3 font-medium" :class="{ 'text-primary': sort === 'home_runs' }">
+                                        HR
                                     </th>
-                                    <th class="p-3 font-medium">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            @click="sortBy('home_runs')"
-                                            class="-ml-3"
-                                        >
-                                            HR
-                                            <component
-                                                :is="getSortIcon('home_runs')"
-                                                class="ml-1 h-4 w-4"
-                                            />
-                                        </Button>
-                                    </th>
-                                    <th class="p-3 font-medium">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            @click="sortBy('rbi')"
-                                            class="-ml-3"
-                                        >
-                                            RBI
-                                            <component
-                                                :is="getSortIcon('rbi')"
-                                                class="ml-1 h-4 w-4"
-                                            />
-                                        </Button>
-                                    </th>
-                                    <th class="p-3 font-medium">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            @click="sortBy('batting_average')"
-                                            class="-ml-3"
-                                        >
-                                            AVG
-                                            <component
-                                                :is="
-                                                    getSortIcon(
-                                                        'batting_average',
-                                                    )
-                                                "
-                                                class="ml-1 h-4 w-4"
-                                            />
-                                        </Button>
-                                    </th>
+                                    <th class="p-3 font-medium">RBI</th>
+                                    <th class="p-3 font-medium">AVG</th>
                                     <th class="p-3 font-medium">OPS</th>
                                 </tr>
                             </thead>
@@ -199,24 +138,18 @@ function formatDecimal(value: number | string | null): string {
                                         {{ player.position }}
                                     </td>
                                     <td class="p-3">{{ player.games }}</td>
-                                    <td class="p-3 font-semibold">
+                                    <td class="p-3 font-semibold" :class="{ 'text-primary': sort === 'hits' }">
                                         {{ player.hits }}
                                     </td>
-                                    <td class="p-3 font-semibold">
+                                    <td class="p-3 font-semibold" :class="{ 'text-primary': sort === 'home_runs' }">
                                         {{ player.home_runs }}
                                     </td>
                                     <td class="p-3">{{ player.rbi }}</td>
                                     <td class="p-3">
-                                        {{
-                                            formatDecimal(player.batting_average)
-                                        }}
+                                        {{ formatDecimal(player.batting_average) }}
                                     </td>
                                     <td class="p-3">
-                                        {{
-                                            formatDecimal(
-                                                player.on_base_plus_slugging,
-                                            )
-                                        }}
+                                        {{ formatDecimal(player.on_base_plus_slugging) }}
                                     </td>
                                 </tr>
                             </tbody>
