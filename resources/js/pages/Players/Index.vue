@@ -54,6 +54,11 @@ function formatDecimal(value: number | string | null): string {
     const num = typeof value === 'string' ? parseFloat(value) : value;
     return isNaN(num) ? '---' : num.toFixed(3);
 }
+
+function calculateHitsPerGame(player: Player): number | null {
+    if (!player.games || player.games === 0) return null;
+    return player.hits / player.games;
+}
 </script>
 
 <template>
@@ -75,7 +80,7 @@ function formatDecimal(value: number | string | null): string {
                 <CardHeader>
                     <CardTitle>Player Statistics</CardTitle>
                     <CardDescription>
-                        Click a player name to view details. Sort by Hits or Home Runs.
+                        Click a player name to view details. Sort by Hits, Home Runs, or Hits/Game.
                     </CardDescription>
                     
                     <!-- Sort Controls -->
@@ -99,6 +104,15 @@ function formatDecimal(value: number | string | null): string {
                             <ArrowDown v-if="sort === 'home_runs' && direction === 'desc'" class="ml-1 h-4 w-4" />
                             <ArrowUp v-if="sort === 'home_runs' && direction === 'asc'" class="ml-1 h-4 w-4" />
                         </Button>
+                        <Button
+                            :variant="sort === 'hits_per_game' ? 'default' : 'outline'"
+                            size="sm"
+                            @click="sortBy('hits_per_game')"
+                        >
+                            Hits/Game
+                            <ArrowDown v-if="sort === 'hits_per_game' && direction === 'desc'" class="ml-1 h-4 w-4" />
+                            <ArrowUp v-if="sort === 'hits_per_game' && direction === 'asc'" class="ml-1 h-4 w-4" />
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -111,6 +125,9 @@ function formatDecimal(value: number | string | null): string {
                                     <th class="p-3 font-medium">G</th>
                                     <th class="p-3 font-medium" :class="{ 'text-primary': sort === 'hits' }">
                                         H
+                                    </th>
+                                    <th class="p-3 font-medium" :class="{ 'text-primary': sort === 'hits_per_game' }">
+                                        H/G
                                     </th>
                                     <th class="p-3 font-medium" :class="{ 'text-primary': sort === 'home_runs' }">
                                         HR
@@ -140,6 +157,9 @@ function formatDecimal(value: number | string | null): string {
                                     <td class="p-3">{{ player.games }}</td>
                                     <td class="p-3 font-semibold" :class="{ 'text-primary': sort === 'hits' }">
                                         {{ player.hits }}
+                                    </td>
+                                    <td class="p-3 font-semibold" :class="{ 'text-primary': sort === 'hits_per_game' }">
+                                        {{ formatDecimal(calculateHitsPerGame(player)) }}
                                     </td>
                                     <td class="p-3 font-semibold" :class="{ 'text-primary': sort === 'home_runs' }">
                                         {{ player.home_runs }}
